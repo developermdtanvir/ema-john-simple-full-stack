@@ -40,16 +40,31 @@ const Shop = () => {
 
     useEffect(() => {
         const storedCart = getStoredCart();
+        console.log(storedCart);
+        const ids = Object.keys(storedCart);
+        console.log(ids);
+        fetch('http://localhost:5000/productById', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ids)
+        })
+            .then(res => res.json())
+            .then(data => {
+                for (const id in storedCart) {
+                    const addedProduct = data.find(product => product._id === id);
+                    if (addedProduct) {
+                        const quantity = storedCart[id];
+                        addedProduct.quantity = quantity;
+                        savedCart.push(addedProduct);
+                    }
+                }
+                setCart(savedCart);
+            });
+
         const savedCart = [];
-        for (const id in storedCart) {
-            const addedProduct = products.find(product => product._id === id);
-            if (addedProduct) {
-                const quantity = storedCart[id];
-                addedProduct.quantity = quantity;
-                savedCart.push(addedProduct);
-            }
-        }
-        setCart(savedCart);
+
     }, [products])
 
     const handleAddToCart = (selectedProduct) => {
@@ -92,7 +107,7 @@ const Shop = () => {
             <div className='paigination'>
                 <p>Current {pages} and size {size}</p>
                 {
-                    [...Array(pages).keys()].map(index => <button className={page === index && 'selacted'} onClick={() => setPage(index)} key={index}>{index}</button>)
+                    [...Array(pages).keys()].map(index => <button className={page === index && 'selacted'} onClick={() => setPage(index)} key={index}>{index + 1}</button>)
                 }
                 <select onChange={(e) => setSize(e.target.value)}>
                     <option value="5">5</option>
